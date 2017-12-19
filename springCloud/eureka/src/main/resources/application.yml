@@ -1,0 +1,57 @@
+#security:
+#  basic:
+#    enabled: true
+#  user:    #z注册中心配置用户名密码
+#    name: admin
+#    password: admin
+
+spring:
+  profiles:
+    active: master
+---
+spring:  
+  profiles: master                                 # 指定profile=peer1
+  application:  
+    name: Eureka-Server                           # 注册中心集群是此处需要保持一致
+server:  
+  port: 8880   # 注册服务的端口号
+eureka:  
+  instance:  
+    hostname: master                               # 指定当profile=peer1时，主机名
+  client:  
+    serviceUrl:
+      defaultZone: http://backup1:8881/eureka,http://backup2:8882/eureka  # 将自己注册到peer2这个Eureka上面去
+    register-with-eureka: true #将自身往注册中心注册
+    fetch-registry: false
+
+---  
+spring:  
+  profiles: backup1
+  application:  
+    name: Eureka-Server
+server:  
+  port: 8881
+eureka:  
+  instance:  
+    hostname: backup1
+  client:
+    serviceUrl:
+      defaultZone: http://master:8880/eureka,http://backup2:8882/eureka # 将自己注册到peer2这个Eureka上面去
+    register-with-eureka: true
+    fetch-registry: false
+
+---
+spring:
+  profiles: backup2
+  application:
+    name: Eureka-Server
+server:
+  port: 8882
+eureka:
+  instance:
+    hostname: backup2
+  client:
+    serviceUrl:
+      defaultZone: http://master:8880/eureka,http://backup1:8881/eureka # 将自己注册到peer2这个Eureka上面去
+    register-with-eureka: true
+    fetch-registry: false
